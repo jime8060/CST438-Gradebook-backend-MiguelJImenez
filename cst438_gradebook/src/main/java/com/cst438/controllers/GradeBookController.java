@@ -1,5 +1,6 @@
 package com.cst438.controllers;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.cst438.domain.Assignment;
 import com.cst438.domain.AssignmentListDTO;
+import com.cst438.domain.AssignmentListDTO.AssignmentDTO;
 import com.cst438.domain.AssignmentGrade;
 import com.cst438.domain.AssignmentGradeRepository;
 import com.cst438.domain.AssignmentRepository;
@@ -137,7 +140,8 @@ public class GradeBookController {
 	public void updateGradebook (@RequestBody GradebookDTO gradebook, @PathVariable("id") Integer assignmentId ) {
 		
 		String email = "dwisneski@csumb.edu";  // user name (should be instructor's email) 
-		checkAssignment(assignmentId, email);  // check that user name matches instructor email of the course.
+		Assignment assignment = checkAssignment(assignmentId, email);  // check that user name matches instructor email of the course.
+		assignment.setName(gradebook.assignmentName);
 		
 		// for each grade in gradebook, update the assignment grade in database 
 		System.out.printf("%d %s %d\n",  gradebook.assignmentId, gradebook.assignmentName, gradebook.grades.size());
@@ -152,6 +156,7 @@ public class GradeBookController {
 			System.out.printf("%s\n", ag.toString());
 			
 			assignmentGradeRepository.save(ag);
+			assignmentRepository.save(assignment);
 		}
 		
 	}
@@ -169,5 +174,65 @@ public class GradeBookController {
 		
 		return assignment;
 	}
+	
+	// TEST ADDING NEW ASSIGNMENT
+
+	@PostMapping("/gradebook")
+    public void createAssignment(@RequestBody AssignmentDTO assignmentDTO) {
+        Course course = courseRepository.findById(assignmentDTO.getCourseId()).orElse(null);
+        if (course == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid course ID: " + assignmentDTO.getCourseId());
+        }
+        
+        Assignment assignment = new Assignment();
+        assignment.setName(assignmentDTO.getName());
+        assignment.setDueDate(LocalDate.parse(assignmentDTO.getDueDate()));
+        assignment.setCourse(course);
+        
+        assignmentRepository.save(assignment);
+    }
+	
+	public static class AssignmentDTO {
+        private String name;
+        private String dueDate;
+        private int courseId;
+        
+        public String getName() {
+            return name;
+        }
+        
+        public void setName(String name) {
+            this.name = name;
+        }
+        
+        public String getDueDate() {
+            return dueDate;
+        }
+        
+        public void setDueDate(String dueDate) {
+            this.dueDate = dueDate;
+        }
+        
+        public int getCourseId() {
+            return courseId;
+        }
+        
+        public void setCourseId(int courseId) {
+            this.courseId = courseId;
+        }
+    }
+	
+	@DeleteMapping("/gradebook/{id}")
+	@Transactional
+	public void deleteAssignment(@PathVariable("id") Integer assignmentId) {
+		List<AssignmentGrade> grades = assignmentGradeRepository.findByAssignmentId(assignmentId);
+	    if (grades.isEmpty()) {
+	        // Delete the assignment if there are no associated grades
+	        assignmentRepository.deleteById(assignmentId);
+	    } else {
+	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot delete assignment with associated grades.");
+	    }
+	}
+
 
 }
