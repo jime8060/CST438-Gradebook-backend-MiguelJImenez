@@ -1,6 +1,7 @@
 package com.cst438.domain;
 
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 import javax.persistence.Entity;
@@ -26,7 +27,7 @@ public class Assignment {
 	private List<AssignmentGrade> assignmentGrades;
 	
 	private String name;
-	private Date dueDate;
+	private LocalDate dueDate;
 	private int needsGrading;  // 0 = false,  1= true (past due date and not all students have grades)
 	
 	public int getId() {
@@ -41,11 +42,11 @@ public class Assignment {
 	public void setName(String name) {
 		this.name = name;
 	}
-	public Date getDueDate() {
+	public LocalDate getDueDate() {
 		return dueDate;
 	}
-	public void setDueDate(Date dueDate) {
-		this.dueDate = dueDate;
+	public void setDueDate(LocalDate localDate) {
+		this.dueDate = localDate;
 	}
 	public int getNeedsGrading() {
 		return needsGrading;
