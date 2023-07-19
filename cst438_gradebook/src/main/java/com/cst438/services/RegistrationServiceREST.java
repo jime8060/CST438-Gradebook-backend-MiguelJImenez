@@ -25,7 +25,7 @@ public class RegistrationServiceREST extends RegistrationService {
 		
 		// Use the RestTemplate to send the final grades to the Registration backend
 		System.out.println("Setting final grades for " + course_id + courseDTO);
-        restTemplate.put(registration_url + "/course/" + course_id + "/finalgrades", courseDTO);
+        restTemplate.put(registration_url + "/course/" + course_id, courseDTO);
         System.out.println("Final grades submitted for course_id: " + course_id);
     }
 		
