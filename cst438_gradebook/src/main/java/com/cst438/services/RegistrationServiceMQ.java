@@ -44,7 +44,19 @@ public class RegistrationServiceMQ extends RegistrationService {
 	@Transactional
 	public void receive(EnrollmentDTO enrollmentDTO) {
 		
-		//TODO  complete this method in homework 4
+		//TODO 
+		// Check given course_id exists in the database.
+	    Course course = courseRepository.findById(enrollmentDTO.getCourse_id())
+	            .orElseThrow(() -> new IllegalArgumentException("Course not found"));
+
+	    // Create a new Enrollment based on received EnrollmentDTO.
+	    Enrollment enrollment = new Enrollment();
+	    enrollment.setCourse(course);
+	    //enrollment.setStudentName(enrollmentDTO.getStudentName());
+	    //enrollment.setStudentEmail(enrollmentDTO.getStudentEmail());
+
+	    // Save new enrollment 
+	    enrollmentRepository.save(enrollment);
 		
 	}
 
@@ -52,8 +64,23 @@ public class RegistrationServiceMQ extends RegistrationService {
 	@Override
 	public void sendFinalGrades(int course_id, CourseDTOG courseDTO) {
 		 
-		//TODO  complete this method in homework 4
-		
+		//TODO  
+		// Get course with given course_id.
+	    Course course = courseRepository.findById(course_id)
+	            .orElseThrow(() -> new IllegalArgumentException("Course not found"));
+
+	    // Prepare the EnrollmentDTO containing final grades.
+	    EnrollmentDTO enrollmentDTO = new EnrollmentDTO();
+	    enrollmentDTO.setCourse_id(course.getCourse_id());
+	    enrollmentDTO.setCourse_name(course.getName());
+	    enrollmentDTO.setInstructor(course.getInstructor());
+	    enrollmentDTO.setStudentName(courseDTO.getStudentName());
+	    enrollmentDTO.setStudentEmail(courseDTO.getStudentEmail());
+	    enrollmentDTO.setGrade(courseDTO.getGrade());
+
+	    // Send the final grades to the registration backend using RabbitTemplate.
+	    rabbitTemplate.convertAndSend(registrationQueue.getName(), enrollmentDTO);
 	}
+		
 
 }
