@@ -28,13 +28,52 @@ public class EnrollmentController {
 	 * course.
 	 */
 	@PostMapping("/enrollment")
-	@Transactional
+	@Transactional // if anything goes wrong it will backtrack
 	public EnrollmentDTO addEnrollment(@RequestBody EnrollmentDTO enrollmentDTO) {
 		
-		//TODO  complete this method in homework 4
+		//TODO
+		// Find the course using course_id from the enrollmentDTO
+//        Course course = courseRepository.findById(enrollmentDTO.course_id)
+//                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found"));
+//
+//        // Create a new Enrollment entity using attributes
+//        Enrollment enrollment = new Enrollment();
+//        enrollment.setCourse(course);
+//        enrollment.setStudentName(enrollmentDTO.studentName);
+//        enrollment.setStudentEmail(enrollmentDTO.studentEmail);
+//
+//        // Save the enrollment 
+//        enrollmentRepository.save(enrollment);
+//
+//        // Convert the saved enrollment to EnrollmentDTO and return it
+//        return convertToEnrollmentDTO(enrollment);
+//    }
+//
+//    // Helper to convert Enrollment to EnrollmentDTO
+//    private EnrollmentDTO convertToEnrollmentDTO(Enrollment enrollment) {
+//        EnrollmentDTO enrollmentDTO = new EnrollmentDTO();
+//        enrollmentDTO.course_id = enrollment.getCourse().getId();
+//        enrollmentDTO.studentName = enrollment.getStudentName();
+//        enrollmentDTO.studentEmail = enrollment.getStudentEmail();
+//        return enrollmentDTO;
+//    }
 		
-		return null;
 		
+		//return null;
+		
+		// TODO USING PROF. CODE
+		Enrollment e = new Enrollment();
+		e.setStudentEmail(enrollmentDTO.studentEmail);
+		e.setStudentName(enrollmentDTO.studentName);
+		Course c = courseRepository.findById(enrollmentDTO.course_id).orElse(null);
+		if (c==null) {
+			throw new ResponseStatusException( HttpStatus.BAD_REQUEST, "Course id not found.");
+		}
+		e.setCourse(c);
+		e = enrollmentRepository.save(e);
+		enrollmentDTO.id = e.getId();
+		return enrollmentDTO;
 	}
+		
 
 }
