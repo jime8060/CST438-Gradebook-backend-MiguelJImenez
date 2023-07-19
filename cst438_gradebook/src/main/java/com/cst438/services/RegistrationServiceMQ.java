@@ -45,18 +45,18 @@ public class RegistrationServiceMQ extends RegistrationService {
 	public void receive(EnrollmentDTO enrollmentDTO) {
 		
 		//TODO 
-		// Check given course_id exists in the database.
-	    Course course = courseRepository.findById(enrollmentDTO.getCourse_id())
-	            .orElseThrow(() -> new IllegalArgumentException("Course not found"));
+		
+		
+		Course course = courseRepository.findById(enrollmentDTO.course_id)
+				.orElseThrow(() -> new IllegalArgumentException("Course not found"));
+		Enrollment enrollment = new Enrollment();
+		
+		enrollment.setCourse(course);
+		enrollment.setStudentEmail(enrollmentDTO.studentEmail);
+		enrollment.setStudentName(enrollmentDTO.studentName);
 
-	    // Create a new Enrollment based on received EnrollmentDTO.
-	    Enrollment enrollment = new Enrollment();
-	    enrollment.setCourse(course);
-	    //enrollment.setStudentName(enrollmentDTO.getStudentName());
-	    //enrollment.setStudentEmail(enrollmentDTO.getStudentEmail());
-
-	    // Save new enrollment 
-	    enrollmentRepository.save(enrollment);
+        // Save new enrollment
+        enrollmentRepository.save(enrollment);
 		
 	}
 
@@ -65,21 +65,12 @@ public class RegistrationServiceMQ extends RegistrationService {
 	public void sendFinalGrades(int course_id, CourseDTOG courseDTO) {
 		 
 		//TODO  
+		
+		
 		// Get course with given course_id.
-	    Course course = courseRepository.findById(course_id)
-	            .orElseThrow(() -> new IllegalArgumentException("Course not found"));
-
-	    // Prepare the EnrollmentDTO containing final grades.
-	    EnrollmentDTO enrollmentDTO = new EnrollmentDTO();
-	    enrollmentDTO.setCourse_id(course.getCourse_id());
-	    enrollmentDTO.setCourse_name(course.getName());
-	    enrollmentDTO.setInstructor(course.getInstructor());
-	    enrollmentDTO.setStudentName(courseDTO.getStudentName());
-	    enrollmentDTO.setStudentEmail(courseDTO.getStudentEmail());
-	    enrollmentDTO.setGrade(courseDTO.getGrade());
-
-	    // Send the final grades to the registration backend using RabbitTemplate.
-	    rabbitTemplate.convertAndSend(registrationQueue.getName(), enrollmentDTO);
+		courseDTO.course_id = course_id;
+		this.rabbitTemplate.convertAndSend(registrationQueue.getName(), courseDTO);
+		System.out.println("Grades being sent for : " + courseDTO);
 	}
 		
 
