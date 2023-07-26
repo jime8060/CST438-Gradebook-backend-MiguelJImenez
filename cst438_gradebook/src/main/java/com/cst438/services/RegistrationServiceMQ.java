@@ -44,7 +44,19 @@ public class RegistrationServiceMQ extends RegistrationService {
 	@Transactional
 	public void receive(EnrollmentDTO enrollmentDTO) {
 		
-		//TODO  complete this method in homework 4
+		//TODO 
+		
+		
+		Course course = courseRepository.findById(enrollmentDTO.course_id)
+				.orElseThrow(() -> new IllegalArgumentException("Course not found"));
+		Enrollment enrollment = new Enrollment();
+		
+		enrollment.setCourse(course);
+		enrollment.setStudentEmail(enrollmentDTO.studentEmail);
+		enrollment.setStudentName(enrollmentDTO.studentName);
+
+        // Save new enrollment
+        enrollmentRepository.save(enrollment);
 		
 	}
 
@@ -52,8 +64,14 @@ public class RegistrationServiceMQ extends RegistrationService {
 	@Override
 	public void sendFinalGrades(int course_id, CourseDTOG courseDTO) {
 		 
-		//TODO  complete this method in homework 4
+		//TODO  
 		
+		
+		// Get course with given course_id.
+		courseDTO.course_id = course_id;
+		this.rabbitTemplate.convertAndSend(registrationQueue.getName(), courseDTO);
+		System.out.println("Grades being sent for : " + courseDTO);
 	}
+		
 
 }
